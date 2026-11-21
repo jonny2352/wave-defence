@@ -69,7 +69,7 @@ export const ENEMY_WALL_HIT_INTERVAL = 0.9; // seconds between melee hits on a w
 export const WAVES = {
   baseCount: 5,
   countPerWave: 2,
-  hpGrowth: 1.13,           // hp multiplier = hpGrowth^(wave-1)
+  hpGrowth: 1.17,           // hp multiplier = hpGrowth^(wave-1)
   speedGrowth: 1.01,
   spawnInterval: 1.15,      // seconds between spawns (wave 1)
   intervalDecay: 0.965,     // per wave

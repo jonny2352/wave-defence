@@ -40,10 +40,18 @@
         touch-action: none;
       }
       #game canvas { display: block; touch-action: none; }
+      /* Landscape phones: ask the player to rotate */
+      #rotate {
+        display: none; position: fixed; inset: 0; z-index: 10; background: var(--bg); color: #fff;
+        font: 700 20px/1.4 -apple-system, Arial, sans-serif; text-align: center;
+        align-items: center; justify-content: center; padding: 24px;
+      }
+      @media (orientation: landscape) and (max-height: 520px) { #rotate { display: flex; } }
     </style>
   </head>
   <body>
     <div id="game"></div>
+    <div id="rotate">Please rotate your phone to portrait</div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

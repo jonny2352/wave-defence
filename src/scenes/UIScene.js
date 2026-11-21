@@ -21,7 +21,13 @@ export class UIScene extends Phaser.Scene {
     }), () => this.gameScene.startWave()).setDepth(50);
     state.on('change', this.onChange, this);
     state.on('select', this.showMode, this);
-    this.events.once('shutdown', () => { state.off('change', this.onChange, this); state.off('select', this.showMode, this); });
+    // auto-pause when the tab / app goes to the background
+    const onHidden = () => { if (!state.paused && !state.over) this.togglePause(); };
+    this.game.events.on('hidden', onHidden);
+    this.events.once('shutdown', () => {
+      state.off('change', this.onChange, this); state.off('select', this.showMode, this);
+      this.game.events.off('hidden', onHidden);
+    });
     this.onChange();
     this.showMode();
   }
