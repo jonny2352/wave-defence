@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME } from './config.js';
 import { unlockAudio } from './audio.js';
+import { state } from './state.js';
 import { BootScene } from './scenes/BootScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { UIScene } from './scenes/UIScene.js';
@@ -20,7 +21,7 @@ document.addEventListener('touchend', (e) => {
 window.addEventListener('pointerdown', unlockAudio, { capture: true });
 window.addEventListener('touchend', unlockAudio, { capture: true });
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   backgroundColor: GAME.bgColor,
@@ -35,3 +36,6 @@ new Phaser.Game({
   fps: { target: 60 },
   scene: [BootScene, GameScene, UIScene, GameOverScene],
 });
+
+// Dev-only debug handle (stripped from production builds)
+if (import.meta.env.DEV) { window.__game = game; window.__state = state; }

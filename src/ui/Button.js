@@ -13,7 +13,7 @@ export class Button extends Phaser.GameObjects.Container {
     super(scene, x, y);
     this.w = w; this.h = h; this.info = info; this.onTap = onTap;
     this.bg = scene.add.graphics();
-    this.title = scene.add.text(0, -h * 0.28, '', { fontFamily: FONT, fontSize: '25px', color: '#fff', align: 'center', wordWrap: { width: w - 10 } }).setOrigin(0.5);
+    this.title = scene.add.text(0, -h * 0.28, '', { fontFamily: FONT, fontSize: (w > 300 ? 25 : 23) + 'px', color: '#fff', align: 'center' }).setOrigin(0.5);
     this.sub = scene.add.text(0, 0, '', { fontFamily: 'Arial, sans-serif', fontSize: '21px', color: '#dfe8f0', align: 'center', wordWrap: { width: w - 8 } }).setOrigin(0.5);
     this.coin = scene.add.image(0, h * 0.3, TEX.coin).setScale(0.8);
     this.cost = scene.add.text(0, h * 0.3, '', { fontFamily: FONT, fontSize: '26px', color: '#ffd34d' }).setOrigin(0, 0.5);

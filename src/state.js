@@ -52,8 +52,8 @@ class GameState extends Phaser.Events.EventEmitter {
   }
 
   // ---- Hero upgrades
-  heroStats() {
-    const u = HERO.upgrades, l = this.hero;
+  heroStats(l = this.hero) {
+    const u = HERO.upgrades;
     return {
       damage: HERO.damage * (1 + u.damage.perLevel * l.damage),
       fireRate: HERO.fireRate * (1 + u.fireRate.perLevel * l.fireRate),
