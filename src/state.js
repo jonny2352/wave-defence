@@ -22,6 +22,7 @@ class GameState extends Phaser.Events.EventEmitter {
     this.phase = 'break';     // 'break' | 'wave'
     this.bossWave = false;
     this.selectedSlot = -1;
+    this.nearSlot = false;   // hero close enough to the selected slot
     this.paused = false;
     this.over = false;
     this.hero = { damage: 0, fireRate: 0, multishot: 0 }; // upgrade levels

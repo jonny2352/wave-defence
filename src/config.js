@@ -15,6 +15,8 @@ export const LAYOUT = {
   laneMax: 470,
   heroX: 360,
   heroY: 890,
+  heroMinX: 50, heroMaxX: 670, // hero roaming bounds
+  heroMinY: 190, heroMaxY: 890,
   pathLeft: 190,     // drawn dirt path
   pathRight: 530,
 };
@@ -48,6 +50,8 @@ export const HERO = {
   range: 560,
   multishot: 1,
   projectileSpeed: 900,
+  moveSpeed: 420,       // px/s when walking
+  buildRange: 170,      // hero must be this close to a slot to build / upgrade / sell
   upgrades: {
     damage:   { baseCost: 25,  growth: 1.55, perLevel: 0.30, max: 25 },
     fireRate: { baseCost: 30,  growth: 1.55, perLevel: 0.15, max: 20 },

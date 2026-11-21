@@ -21,7 +21,10 @@ export class GameScene extends Phaser.Scene {
     // tapping empty ground deselects the current slot (panel area excluded)
     const bg = this.add.image(0, 0, TEX.bg).setOrigin(0).setDepth(-10);
     bg.setInteractive(new Phaser.Geom.Rectangle(0, 0, GAME.width, LAYOUT.panelY), Phaser.Geom.Rectangle.Contains);
-    bg.on('pointerdown', () => state.selectSlot(-1));
+    // tap / drag on the ground = walk there
+    const walk = (p) => this.hero.moveTo(p.x, p.y);
+    bg.on('pointerdown', (p) => { state.selectSlot(-1); walk(p); });
+    bg.on('pointermove', (p) => { if (p.isDown) walk(p); });
     this.castle = this.add.image(0, LAYOUT.baseY - 8, TEX.castle).setOrigin(0).setDepth(1500);
     this.towers = SLOTS.map(() => null);
     this.buildSlots();
@@ -67,7 +70,11 @@ export class GameScene extends Phaser.Scene {
     this.slotSprites = SLOTS.map((p, i) => {
       const s = this.add.image(p.x, p.y, TEX.slot).setDepth(p.y - 50);
       s.setInteractive(new Phaser.Geom.Circle(55, 55, 70), Phaser.Geom.Circle.Contains);
-      s.on('pointerdown', () => { sfx.play('click'); state.selectSlot(state.selectedSlot === i ? -1 : i); });
+      s.on('pointerdown', () => {
+        sfx.play('click');
+        state.selectSlot(state.selectedSlot === i ? -1 : i);
+        this.walkToSlot(i);
+      });
       return s;
     });
     this.selRing = this.add.image(0, 0, TEX.slotSel).setVisible(false).setDepth(8500);
@@ -82,8 +89,22 @@ export class GameScene extends Phaser.Scene {
     if (p) this.selRing.setPosition(p.x, p.y);
   }
 
+  /** Stand just inside the slot, towards the path. */
+  walkToSlot(i) {
+    const p = SLOTS[i];
+    this.hero.moveTo(p.x + (p.x < GAME.width / 2 ? 110 : -110), p.y);
+  }
+
+  /** True when the hero is close enough to work on slot i (otherwise nudges the player). */
+  reach(i) {
+    if (this.hero.isNear(SLOTS[i])) return true;
+    this.floatText(this.hero.x, this.hero.y - 70, 'Move closer!', '#ff8a8a', 28);
+    sfx.play('deny');
+    return false;
+  }
+
   buildTower(i, type) {
-    if (this.towers[i] || state.over) return false;
+    if (this.towers[i] || state.over || !this.reach(i)) return false;
     const cost = TOWERS[type].levels[0].cost;
     if (!state.spend(cost)) return false;
     const p = SLOTS[i];
@@ -97,7 +118,7 @@ export class GameScene extends Phaser.Scene {
 
   upgradeTower(i) {
     const t = this.towers[i];
-    if (!t || !t.nextStats || !state.spend(t.nextStats.cost)) return false;
+    if (!t || !t.nextStats || !this.reach(i) || !state.spend(t.nextStats.cost)) return false;
     t.upgrade();
     sfx.play('upgrade');
     state.changed();
@@ -106,7 +127,7 @@ export class GameScene extends Phaser.Scene {
 
   sellTower(i) {
     const t = this.towers[i];
-    if (!t) return;
+    if (!t || !this.reach(i)) return;
     state.addCredits(t.sellValue);
     this.floatText(t.x, t.y - 40, '+' + t.sellValue);
     this.removeTower(t, false);
@@ -201,6 +222,8 @@ export class GameScene extends Phaser.Scene {
 
     this.waves.update(dt);
     this.hero.update(dt, this.enemies);
+    const near = state.selectedSlot >= 0 && this.hero.isNear(SLOTS[state.selectedSlot]);
+    if (near !== state.nearSlot) { state.nearSlot = near; state.changed(); }
     for (const t of this.towers) if (t) t.update(dt, this.enemies);
     for (const e of this.enemies) if (e.active) e.update(dt, this);
     for (const p of this.projectiles) if (p.active) p.update(dt);

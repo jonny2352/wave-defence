@@ -119,7 +119,7 @@ export class UIScene extends Phaser.Scene {
     TOWER_ORDER.forEach((type, i) => {
       add('build', new Button(this, 0, cy, w, h, () => {
         const c = TOWERS[type].levels[0].cost;
-        return { title: TOWERS[type].name.toUpperCase(), sub: TOWERS[type].blurb, cost: c, color: colors[type], enabled: state.canAfford(c) };
+        return { title: TOWERS[type].name.toUpperCase(), sub: state.nearSlot ? TOWERS[type].blurb : 'Too far! Walk closer', cost: c, color: colors[type], enabled: state.nearSlot && state.canAfford(c) };
       }, () => this.gameScene.buildTower(state.selectedSlot, type)), cx(i));
     });
 
@@ -138,12 +138,12 @@ export class UIScene extends Phaser.Scene {
       const n = t.nextStats;
       return n ? {
         title: 'UPGRADE ' + t.cfg.name.toUpperCase() + '  Lv' + (t.level + 1) + ' > ' + (t.level + 2),
-        sub: diff(t), cost: n.cost, color: 0x2f7d4f, enabled: state.canAfford(n.cost),
+        sub: state.nearSlot ? diff(t) : 'Too far! Walk closer', cost: n.cost, color: 0x2f7d4f, enabled: state.nearSlot && state.canAfford(n.cost),
       } : { title: t.cfg.name.toUpperCase() + '  MAX LEVEL', sub: 'Fully upgraded', color: 0x2f7d4f, enabled: false };
     }, () => this.gameScene.upgradeTower(state.selectedSlot)), cx(0) + (w + gap) / 2);
     add('tower', new Button(this, 0, cy, w, h, () => {
       const t = tw();
-      return { title: 'SELL', sub: t ? 'Refund ' + t.sellValue : '', color: 0x8a3a3a };
+      return { title: 'SELL', sub: t ? 'Refund ' + t.sellValue : '', color: 0x8a3a3a, enabled: state.nearSlot };
     }, () => { this.gameScene.sellTower(state.selectedSlot); state.selectSlot(-1); }), cx(2));
     this.modes.tower[0].setX(cx(0) + (w + gap) / 2 + 0);
     this.modes.tower[1].setX(cx(2) + (w + gap) / 2);

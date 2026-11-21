@@ -21,6 +21,10 @@ npm run preview    # serve dist/ locally (also on LAN)
 npm run icons      # regenerate the home-screen icons in public/
 ```
 
+## Controls
+
+Tap or drag on the ground to walk the hero around. Tap a build slot to select it and the hero walks over; building, upgrading and selling need the hero within `HERO.buildRange` of the slot. Hero upgrades and base repair work from anywhere.
+
 ## Tune the balance
 
 Everything numeric is in **[`src/config.js`](src/config.js)**: hero stats and upgrade costs,

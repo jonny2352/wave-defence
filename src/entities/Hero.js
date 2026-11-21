@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { LAYOUT, HERO } from '../config.js';
 import { TEX } from '../visuals.js';
 import { state } from '../state.js';
@@ -11,9 +12,33 @@ export class Hero {
     this.body = scene.add.image(this.x, this.y, TEX.hero).setDepth(2000);
     this.gun = scene.add.image(this.x, this.y - 6, TEX.heroGun).setOrigin(0.5, 0.85).setDepth(2001);
     this.cd = 0;
+    this.dest = null;
+    this.marker = scene.add.image(0, 0, TEX.slotSel).setScale(0.45).setAlpha(0.8).setVisible(false).setDepth(1400);
+  }
+
+  /** Walk toward (x, y), clamped to the roaming area. */
+  moveTo(x, y) {
+    this.dest = {
+      x: Phaser.Math.Clamp(x, LAYOUT.heroMinX, LAYOUT.heroMaxX),
+      y: Phaser.Math.Clamp(y, LAYOUT.heroMinY, LAYOUT.heroMaxY),
+    };
+    this.marker.setPosition(this.dest.x, this.dest.y).setVisible(true);
+  }
+
+  isNear(p) { return Math.hypot(p.x - this.x, p.y - this.y) <= HERO.buildRange; }
+
+  move(dt) {
+    if (!this.dest) return;
+    const dx = this.dest.x - this.x, dy = this.dest.y - this.y, d = Math.hypot(dx, dy);
+    const step = HERO.moveSpeed * dt;
+    if (d <= step) { this.x = this.dest.x; this.y = this.dest.y; this.dest = null; this.marker.setVisible(false); }
+    else { this.x += (dx / d) * step; this.y += (dy / d) * step; }
+    this.body.setPosition(this.x, this.y + Math.sin(this.scene.time.now / 60) * (this.dest ? 3 : 0));
+    this.gun.setPosition(this.x, this.y - 6);
   }
 
   update(dt, enemies) {
+    this.move(dt);
     const st = state.heroStats();
     this.cd -= dt;
     // nearest enemies in range, sorted by distance
