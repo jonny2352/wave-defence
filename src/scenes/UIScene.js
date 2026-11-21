@@ -14,7 +14,7 @@ export class UIScene extends Phaser.Scene {
   create() {
     this.buildHud();
     this.buildPanel();
-    this.nextBtn = new Button(this, GAME.width / 2, 420, 330, 110, () => ({
+    this.nextBtn = new Button(this, GAME.width / 2, 1030, 330, 110, () => ({
       title: state.wave === 0 ? 'START WAVE 1' : 'NEXT WAVE ' + (state.wave + 1),
       sub: (state.wave + 1) % 5 === 0 ? 'BOSS INCOMING!' : 'Tap when ready',
       color: (state.wave + 1) % 5 === 0 ? 0xa33a8e : 0xc2581f,
@@ -138,7 +138,7 @@ export class UIScene extends Phaser.Scene {
       const t = tw(); if (!t) return { title: '' };
       const n = t.nextStats;
       return n ? {
-        title: 'UPGRADE ' + t.cfg.name.toUpperCase() + '  Lv' + (t.level + 1) + ' > ' + (t.level + 2),
+        title: 'UPGRADE  Lv' + (t.level + 1) + ' > ' + (t.level + 2),
         sub: state.nearSlot ? diff(t) : 'Too far! Walk closer', cost: n.cost, color: 0x2f7d4f, enabled: state.nearSlot && state.canAfford(n.cost),
       } : { title: t.cfg.name.toUpperCase() + '  MAX LEVEL', sub: 'Fully upgraded', color: 0x2f7d4f, enabled: false };
     }, () => this.gameScene.upgradeTower(state.selectedSlot)), cx(0) + (w + gap) / 2);

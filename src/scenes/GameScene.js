@@ -108,7 +108,7 @@ export class GameScene extends Phaser.Scene {
     if (!state.spend(cost)) return false;
     const p = SLOTS[i];
     this.towers[i] = new Tower(this, i, type, p.x, p.y);
-    this.slotSprites[i].setVisible(false);
+    this.slotSprites[i].setAlpha(0.01) // not 0: Phaser skips alpha-0 objects in hit-testing;
     this.burst(p.x, p.y, 0xffffff, 10);
     sfx.play('build');
     state.changed();
@@ -135,7 +135,7 @@ export class GameScene extends Phaser.Scene {
 
   removeTower(t, destroyed) {
     this.towers[t.slotIndex] = null;
-    this.slotSprites[t.slotIndex].setVisible(true);
+    this.slotSprites[t.slotIndex].setAlpha(1);
     if (destroyed) { this.burst(t.x, t.y, 0x9a9aa6, 20); sfx.play('boom'); }
     t.destroy();
     state.changed();
