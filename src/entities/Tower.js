@@ -71,6 +71,7 @@ export class Tower {
       kind: this.cfg.projectile, speed: this.cfg.projectileSpeed,
       damage: s.damage, splash: s.splash, slow: s.slow, slowTime: s.slowTime,
     });
+    if (this.type === 'cannon') this.scene.burstSmall(this.x, this.y - 50, 0xffb060, 8);
     sfx.play(this.type === 'cannon' ? 'cannon' : this.type === 'frost' ? 'frost' : 'arrow');
     this.scene.tweens.add({ targets: this.sprite, scaleY: { from: this.baseScale * 0.9, to: this.baseScale }, duration: 100 });
   }

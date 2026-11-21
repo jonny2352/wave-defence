@@ -11,21 +11,29 @@ export const LAYOUT = {
   spawnY: 70,        // enemies appear here (just under the HUD)
   baseY: 930,        // enemies that reach this y hit the base
   panelY: 1135,      // top of the bottom upgrade panel
-  laneMin: 250,      // enemies pick an x between laneMin..laneMax
-  laneMax: 470,
   heroX: 360,
   heroY: 890,
   heroMinX: 50, heroMaxX: 670, // hero roaming bounds
   heroMinY: 190, heroMaxY: 890,
-  pathLeft: 190,     // drawn dirt path
-  pathRight: 530,
 };
 
-// ---- Fixed build slots beside the path (x, y)
+// ---- The winding path (sine-wave serpentine, top -> castle gate)
+export const PATH = {
+  cx: 360,          // centre line
+  amp: 150,         // how far it swings left/right
+  period: 450,      // vertical length of one full S
+  y0: 30,           // starts hidden under the HUD
+  y1: 930,          // ends at the castle gate
+  halfWidth: 60,    // drawn half-width (the path is 120px wide)
+  laneSpread: 26,   // enemies wander +/- this far from the centre line
+};
+
+// ---- Fixed build slots (x, y). A-D sit in the pockets of the bends: path passes on
+// both sides, so towers there can shoot two sections of the path. E/F are outer slots.
 export const SLOTS = [
-  { x: 100, y: 300 }, { x: 620, y: 300 },
-  { x: 100, y: 510 }, { x: 620, y: 510 },
-  { x: 100, y: 720 }, { x: 620, y: 720 },
+  { x: 470, y: 367 }, { x: 250, y: 592 },
+  { x: 470, y: 817 }, { x: 250, y: 175 },
+  { x: 70,  y: 367 }, { x: 650, y: 592 },
 ];
 
 // ---- Economy
@@ -50,7 +58,7 @@ export const HERO = {
   range: 560,
   multishot: 1,
   projectileSpeed: 900,
-  moveSpeed: 420,       // px/s when walking
+  moveSpeed: 357,       // px/s when walking
   buildRange: 170,      // hero must be this close to a slot to build / upgrade / sell
   upgrades: {
     damage:   { baseCost: 25,  growth: 1.55, perLevel: 0.30, max: 25 },
@@ -61,12 +69,12 @@ export const HERO = {
 
 // ---- Enemies.  speed = px/s, damage = dealt to base on arrival (and per hit to walls)
 export const ENEMIES = {
-  grunt:  { hp: 30,  speed: 72,  damage: 6,  credits: 5,   radius: 22, color: 0x6abf4b },
-  runner: { hp: 15,  speed: 150, damage: 4,  credits: 4,   radius: 17, color: 0xf2b134 },
-  brute:  { hp: 140, speed: 44,  damage: 16, credits: 16,  radius: 34, color: 0xc8553d },
-  boss:   { hp: 900, speed: 34,  damage: 45, credits: 150, radius: 56, color: 0x8e44ad },
+  grunt:  { hp: 30,  speed: 94,  damage: 6,  credits: 5,   radius: 22, color: 0x6abf4b },
+  runner: { hp: 15,  speed: 195, damage: 4,  credits: 4,   radius: 17, color: 0xf2b134 },
+  brute:  { hp: 140, speed: 57,  damage: 16, credits: 16,  radius: 34, color: 0xc8553d },
+  boss:   { hp: 900, speed: 44,  damage: 45, credits: 150, radius: 56, color: 0x8e44ad },
 };
-export const ENEMY_WALL_AGGRO = 330;   // px: enemies passing a wall's row within this x-distance attack it
+export const ENEMY_WALL_AGGRO = 230;   // px: enemies passing within this distance of a wall go and attack it
 export const ENEMY_WALL_HIT_INTERVAL = 0.9; // seconds between melee hits on a wall
 
 // ---- Waves

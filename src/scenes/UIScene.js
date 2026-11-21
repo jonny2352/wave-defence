@@ -21,6 +21,7 @@ export class UIScene extends Phaser.Scene {
     }), () => this.gameScene.startWave()).setDepth(50);
     state.on('change', this.onChange, this);
     state.on('select', this.showMode, this);
+    if (this.input.keyboard) this.input.keyboard.on('keydown', (e) => { if (e.code === 'Escape' || e.code === 'KeyP') this.togglePause(); });
     // auto-pause when the tab / app goes to the background
     const onHidden = () => { if (!state.paused && !state.over) this.togglePause(); };
     this.game.events.on('hidden', onHidden);

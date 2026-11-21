@@ -25,6 +25,10 @@ npm run icons      # regenerate the home-screen icons in public/
 
 Tap or drag on the ground to walk the hero around. Tap a build slot to select it and the hero walks over; building, upgrading and selling need the hero within `HERO.buildRange` of the slot. Hero upgrades and base repair work from anywhere.
 
+**On PC:** move with **WASD** or the arrow keys (overrides tap-to-walk while held), and **Esc** or **P** pauses.
+
+The enemy path is a winding serpentine (`PATH` in `src/config.js`). Slots in the bends of the S have the path on both sides, so towers there cover two sections.
+
 ## Tune the balance
 
 Everything numeric is in **[`src/config.js`](src/config.js)**: hero stats and upgrade costs,
@@ -52,6 +56,7 @@ changes. Hit radii and sizes come from `config.js` (`radius`) so adjust those if
 
 ```
 src/
+  path.js            the winding path geometry (enemies follow it by arc length)
   config.js          all balance + layout numbers
   state.js           game state + economy (credits, base HP, hero upgrades, best score)
   audio.js           Web Audio sound effects + mute (persisted)

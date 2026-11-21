@@ -19,6 +19,7 @@ export class Projectile {
     this.slow = o.slow || 0;
     this.slowTime = o.slowTime || 0;
     this.kind = o.kind;
+    this.trailT = 0;
     this.sprite.setTexture(TEX.projectile(o.kind)).setPosition(x, y).setVisible(true).setActive(true);
     this.orient();
   }
@@ -45,6 +46,8 @@ export class Projectile {
     s.x += (dx / dist) * step;
     s.y += (dy / dist) * step;
     this.orient();
+    this.trailT -= dt;
+    if (this.trailT <= 0) { this.trailT = 0.03; this.scene.trail(this.kind, s.x, s.y); }
   }
 
   deactivate() {

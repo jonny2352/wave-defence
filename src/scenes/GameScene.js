@@ -55,8 +55,7 @@ export class GameScene extends Phaser.Scene {
   spawnEnemy(type, hpMult = 1, speedMult = 1, creditMult = 1) {
     let e = this.enemies.find((q) => !q.active);
     if (!e) { e = new Enemy(this); this.enemies.push(e); }
-    const x = Phaser.Math.Between(LAYOUT.laneMin, LAYOUT.laneMax);
-    return e.spawn(type, hpMult, speedMult, creditMult, x, LAYOUT.spawnY);
+    return e.spawn(type, hpMult, speedMult, creditMult);
   }
 
   fireProjectile(x, y, target, opts) {
@@ -92,7 +91,7 @@ export class GameScene extends Phaser.Scene {
   /** Stand just inside the slot, towards the path. */
   walkToSlot(i) {
     const p = SLOTS[i];
-    this.hero.moveTo(p.x + (p.x < GAME.width / 2 ? 110 : -110), p.y);
+    this.hero.moveTo(p.x + (p.x < GAME.width / 2 ? 80 : -80), p.y);
   }
 
   /** True when the hero is close enough to work on slot i (otherwise nudges the player). */
@@ -145,7 +144,7 @@ export class GameScene extends Phaser.Scene {
   findWallFor(e) {
     for (const t of this.towers) {
       if (!t || !t.isWall || !t.alive) continue;
-      if (Math.abs(e.y - t.y) < 22 && Math.abs(e.x - t.x) < ENEMY_WALL_AGGRO) return t;
+      if (Math.hypot(e.x - t.x, e.y - t.y) < ENEMY_WALL_AGGRO) return t;
     }
     return null;
   }
@@ -174,6 +173,8 @@ export class GameScene extends Phaser.Scene {
 
   killEnemy(e) {
     this.burst(e.x, e.y, e.cfg.color, e.type === 'boss' ? 40 : e.type === 'brute' ? 20 : 12);
+    this.ring(e.x, e.y, e.radius, e.cfg.color);
+    if (e.type === 'boss') this.cameras.main.shake(250, 0.008);
     sfx.play('kill');
     state.kills++;
     state.addCredits(e.credits);
@@ -203,6 +204,36 @@ export class GameScene extends Phaser.Scene {
   }
 
   // ---------- juice ----------
+  /** Expanding shockwave ring. */
+  ring(x, y, r, color) {
+    const s = this.add.image(x, y, TEX.ring).setTint(color).setDepth(7900).setAlpha(0.8).setScale(r / 40);
+    this.tweens.add({ targets: s, scale: r / 40 * 2.6, alpha: 0, duration: 280, onComplete: () => s.destroy() });
+  }
+
+  /** Little muzzle flash. */
+  muzzle(x, y) { this.burstSmall(x, y, 0xffe9a0, 4); }
+
+  burstSmall(x, y, color, n) {
+    const em = this.getEmitter('s' + color, color, { lifespan: { min: 90, max: 200 }, speed: { min: 40, max: 160 }, scale: { start: 0.55, end: 0 } });
+    em.explode(n, x, y);
+  }
+
+  /** Single trail puff behind a projectile. */
+  trail(kind, x, y) {
+    const color = kind === 'frost' ? 0xbff0ff : kind === 'shell' ? 0x888888 : kind === 'arrow' ? 0xdddddd : 0xffe27a;
+    const em = this.getEmitter('t' + color, color, { lifespan: 220, speed: 0, scale: { start: kind === 'shell' ? 0.9 : 0.5, end: 0 }, alpha: { start: 0.7, end: 0 } });
+    em.emitParticleAt(x, y, 1);
+  }
+
+  getEmitter(key, color, cfg) {
+    let em = this.emitters.get(key);
+    if (!em) {
+      em = this.add.particles(0, 0, TEX.spark, { emitting: false, tint: color, blendMode: 'ADD', ...cfg }).setDepth(7800);
+      this.emitters.set(key, em);
+    }
+    return em;
+  }
+
   burst(x, y, color, n) {
     let em = this.emitters.get(color);
     if (!em) {
