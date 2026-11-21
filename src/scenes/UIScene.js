@@ -2,8 +2,8 @@ import Phaser from 'phaser';
 import { GAME, LAYOUT, HERO, BASE, TOWERS, TOWER_ORDER, MAX_TOWER_LEVEL } from '../config.js';
 import { TEX } from '../visuals.js';
 import { state } from '../state.js';
-import { Button, FONT } from '../ui/Button.js';
-import { sfx } from '../audio.js';
+import { Button, iconButton, FONT } from '../ui/Button.js';
+import { sfx, setMuted, isMuted } from '../audio.js';
 
 /** HUD + bottom panel + pause overlay. Runs in parallel on top of GameScene. */
 export class UIScene extends Phaser.Scene {
@@ -42,23 +42,35 @@ export class UIScene extends Phaser.Scene {
     this.hpBar = this.add.graphics();
     this.hpText = T(384, 72, '', 18, '#fff', 0.5);
 
-    this.pauseBtn = this.makeIconBtn(W - 50, 48, 'pause', () => this.togglePause());
+    this.pauseBtn = iconButton(this, W - 50, 48, 'pause', () => this.togglePause());
+    this.muteBtn = iconButton(this, W - 128, 48, 'sound', () => setMuted(!isMuted()));
   }
 
-  makeIconBtn(x, y, kind, fn) {
-    const c = this.add.container(x, y);
-    const bg = this.add.graphics();
-    bg.fillStyle(0x2b3a30, 1).fillRoundedRect(-30, -30, 60, 60, 12).lineStyle(3, 0xffffff, 0.5).strokeRoundedRect(-30, -30, 60, 60, 12);
-    const ic = this.add.graphics().fillStyle(0xffffff, 1);
-    if (kind === 'pause') ic.fillRect(-12, -14, 8, 28).fillRect(4, -14, 8, 28);
-    if (kind === 'close') ic.lineStyle(7, 0xffffff, 1).lineBetween(-12, -12, 12, 12).lineBetween(12, -12, -12, 12);
-    c.add([bg, ic]);
-    c.setSize(72, 72).setInteractive();
-    c.on('pointerup', fn);
-    return c;
+  // ---------------- pause overlay ----------------
+  togglePause() {
+    if (state.over) return;
+    if (!this.pauseUi) this.buildPauseUi();
+    const on = !state.paused;
+    state.paused = on;
+    this.pauseUi.setVisible(on);
+    if (on) { this.gameScene.scene.pause(); this.soundBtn.refresh(); } else this.gameScene.scene.resume();
   }
 
-  togglePause() { /* stage 4 */ }
+  buildPauseUi() {
+    const W = GAME.width, H = GAME.height, cx = W / 2;
+    const c = this.add.container(0, 0).setDepth(1000).setVisible(false);
+    const dim = this.add.rectangle(0, 0, W, H, 0x000000, 0.7).setOrigin(0).setInteractive(); // blocks taps
+    const title = this.add.text(cx, 360, 'PAUSED', { fontFamily: FONT, fontSize: '96px', color: '#fff', stroke: '#000', strokeThickness: 10 }).setOrigin(0.5);
+    const resume = new Button(this, cx, 560, 400, 120, () => ({ title: 'RESUME', color: 0x2f7d4f }), () => this.togglePause());
+    this.soundBtn = new Button(this, cx, 710, 400, 100, () => ({ title: isMuted() ? 'SOUND: OFF' : 'SOUND: ON', color: 0x2f6fb0 }), () => { setMuted(!isMuted()); this.soundBtn.refresh(); this.muteBtn.draw(); });
+    const quit = new Button(this, cx, 840, 400, 100, () => ({ title: 'QUIT TO MENU', color: 0x8a3a3a }), () => {
+      state.paused = false;
+      this.gameScene.scene.resume();
+      this.scene.stop('Game'); this.scene.stop('UI'); this.scene.start('Title');
+    });
+    c.add([dim, title, resume, this.soundBtn, quit]);
+    this.pauseUi = c;
+  }
 
   // ---------------- bottom panel ----------------
   buildPanel() {
@@ -131,7 +143,7 @@ export class UIScene extends Phaser.Scene {
     this.modes.tower[1].setX(cx(2) + (w + gap) / 2);
 
     // Close "x" (shown when a slot is selected)
-    this.closeBtn = this.makeIconBtn(W - 46, y0 - 4, 'close', () => state.selectSlot(-1));
+    this.closeBtn = iconButton(this, W - 46, y0 - 4, 'close', () => state.selectSlot(-1));
     this.closeBtn.setScale(0.8).setDepth(60);
     Object.values(this.modes).flat().forEach((b) => b.setDepth(10));
   }

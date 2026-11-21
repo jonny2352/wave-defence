@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { sfx } from '../audio.js';
+import { sfx, isMuted } from '../audio.js';
 import { TEX } from '../visuals.js';
 
 export const FONT = 'Arial Black, Arial, sans-serif';
@@ -58,4 +58,31 @@ export class Button extends Phaser.GameObjects.Container {
     if (this.input) this.input.enabled = on;
     return this;
   }
+}
+
+/** Small square icon button: kind = 'pause' | 'close' | 'sound' (sound reads the mute state). */
+export function iconButton(scene, x, y, kind, fn) {
+  const c = scene.add.container(x, y);
+  const bg = scene.add.graphics();
+  bg.fillStyle(0x2b3a30, 1).fillRoundedRect(-30, -30, 60, 60, 12).lineStyle(3, 0xffffff, 0.5).strokeRoundedRect(-30, -30, 60, 60, 12);
+  const ic = scene.add.graphics();
+  c.add([bg, ic]);
+  c.draw = () => {
+    ic.clear().fillStyle(0xffffff, 1).lineStyle(7, 0xffffff, 1);
+    if (kind === 'pause') ic.fillRect(-12, -14, 8, 28).fillRect(4, -14, 8, 28);
+    else if (kind === 'close') ic.lineBetween(-12, -12, 12, 12).lineBetween(12, -12, -12, 12);
+    else if (kind === 'sound') {
+      ic.fillRect(-16, -7, 8, 14).fillTriangle(-8, -7, 2, -16, 2, 16).fillTriangle(-8, 7, 2, 16, 2, -16);
+      if (isMuted()) ic.lineStyle(5, 0xff6b6b, 1).lineBetween(8, -10, 20, 10).lineBetween(20, -10, 8, 10);
+      else {
+        ic.lineStyle(4, 0xffffff, 1);
+        ic.beginPath().arc(2, 0, 11, -0.9, 0.9).strokePath();
+        ic.beginPath().arc(2, 0, 19, -0.9, 0.9).strokePath();
+      }
+    }
+  };
+  c.draw();
+  c.setSize(76, 76).setInteractive();
+  c.on('pointerup', () => { sfx.play('click'); fn(); c.draw(); });
+  return c;
 }

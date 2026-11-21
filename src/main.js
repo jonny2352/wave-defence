@@ -4,6 +4,7 @@ import { unlockAudio } from './audio.js';
 import { state } from './state.js';
 import { BootScene } from './scenes/BootScene.js';
 import { GameScene } from './scenes/GameScene.js';
+import { TitleScene } from './scenes/TitleScene.js';
 import { UIScene } from './scenes/UIScene.js';
 import { GameOverScene } from './scenes/GameOverScene.js';
 
@@ -34,7 +35,7 @@ const game = new Phaser.Game({
   input: { activePointers: 2 },
   render: { antialias: true, powerPreference: 'high-performance' },
   fps: { target: 60 },
-  scene: [BootScene, GameScene, UIScene, GameOverScene],
+  scene: [BootScene, TitleScene, GameScene, UIScene, GameOverScene],
 });
 
 // Dev-only debug handle (stripped from production builds)
