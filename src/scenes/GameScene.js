@@ -6,6 +6,7 @@ import { sfx } from '../audio.js';
 import { Hero } from '../entities/Hero.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Projectile } from '../entities/Projectile.js';
+import { WaveManager } from '../WaveManager.js';
 
 export class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
@@ -21,8 +22,23 @@ export class GameScene extends Phaser.Scene {
     this.hero = new Hero(this);
     this.hpGfx = this.add.graphics().setDepth(9000);
 
-    // TEMP (stage 1): trickle of enemies so we can see shooting working
-    this.tempTimer = 0;
+    this.waves = new WaveManager(this);
+    this.scene.launch('UI');
+    this.events.once('shutdown', () => this.scene.stop('UI'));
+  }
+
+  startWave() { this.waves.startNextWave(); }
+
+  onWaveCleared(bonus) {
+    this.floatText(GAME.width / 2, 400, 'Wave cleared!  +' + bonus, '#ffd34d', 44, 1400);
+  }
+
+  floatText(x, y, str, color = '#ffd34d', size = 30, life = 800) {
+    const t = this.add.text(x, y, str, {
+      fontFamily: 'Arial Black, Arial, sans-serif', fontSize: size + 'px', color,
+      stroke: '#000', strokeThickness: 5,
+    }).setOrigin(0.5).setDepth(9500);
+    this.tweens.add({ targets: t, y: y - 70, alpha: 0, duration: life, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
   }
 
   // ---------- pools ----------
@@ -66,6 +82,9 @@ export class GameScene extends Phaser.Scene {
   killEnemy(e) {
     this.burst(e.x, e.y, e.cfg.color, e.type === 'boss' ? 40 : e.type === 'brute' ? 20 : 12);
     sfx.play('kill');
+    state.kills++;
+    state.addCredits(e.credits);
+    this.floatText(e.x, e.y - e.radius, '+' + e.credits);
     e.deactivate();
   }
 
@@ -76,7 +95,18 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(120, () => this.castle.clearTint());
     this.burst(e.x, LAYOUT.baseY, 0xff4444, 10);
     sfx.play('baseHit');
-    state.damageBase(e.damage);
+    if (state.damageBase(e.damage)) this.gameOver();
+  }
+
+  gameOver() {
+    if (state.over) return;
+    state.over = true;
+    sfx.play('gameover');
+    this.cameras.main.shake(400, 0.015);
+    this.time.delayedCall(900, () => {
+      this.scene.stop('UI');
+      this.scene.start('GameOver', { waves: state.wavesCleared, kills: state.kills });
+    });
   }
 
   // ---------- juice ----------
@@ -95,14 +125,9 @@ export class GameScene extends Phaser.Scene {
   // ---------- loop ----------
   update(_t, delta) {
     const dt = Math.min(delta, 50) / 1000;
+    if (state.over) return;
 
-    this.tempTimer -= dt;
-    if (this.tempTimer <= 0) {
-      this.tempTimer = 0.9;
-      const r = Math.random();
-      this.spawnEnemy(r < 0.6 ? 'grunt' : r < 0.85 ? 'runner' : 'brute');
-    }
-
+    this.waves.update(dt);
     this.hero.update(dt, this.enemies);
     for (const e of this.enemies) if (e.active) e.update(dt, this);
     for (const p of this.projectiles) if (p.active) p.update(dt);

@@ -3,6 +3,8 @@ import { GAME } from './config.js';
 import { unlockAudio } from './audio.js';
 import { BootScene } from './scenes/BootScene.js';
 import { GameScene } from './scenes/GameScene.js';
+import { UIScene } from './scenes/UIScene.js';
+import { GameOverScene } from './scenes/GameOverScene.js';
 
 // Block page gestures (pinch zoom, double-tap zoom, scroll, long-press menu).
 const stop = (e) => e.preventDefault();
@@ -31,5 +33,5 @@ new Phaser.Game({
   input: { activePointers: 2 },
   render: { antialias: true, powerPreference: 'high-performance' },
   fps: { target: 60 },
-  scene: [BootScene, GameScene],
+  scene: [BootScene, GameScene, UIScene, GameOverScene],
 });
